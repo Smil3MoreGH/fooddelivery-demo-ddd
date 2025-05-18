@@ -37,10 +37,10 @@ public class LieferanDDDOSwingUI extends JFrame {
 
         // --- Action Buttons Panel ---
         JPanel actionsPanel = new JPanel(new FlowLayout());
-        JButton placeOrderBtn = new JButton("Place Order");
-        JButton payOrderBtn = new JButton("Pay Order");
-        JButton deliverBtn = new JButton("Delivery");
-        JButton cancelBtn = new JButton("Cancel Order");
+        JButton placeOrderBtn = createStyledButton("Place Order");
+        JButton payOrderBtn = createStyledButton("Pay Order");
+        JButton deliverBtn = createStyledButton("Delivery");
+        JButton cancelBtn = createStyledButton("Cancel Order");
         actionsPanel.add(placeOrderBtn);
         actionsPanel.add(payOrderBtn);
         actionsPanel.add(deliverBtn);
@@ -63,13 +63,25 @@ public class LieferanDDDOSwingUI extends JFrame {
         contextPanel = new JPanel(new CardLayout());
 
         // Restaurant Selection View
-        restaurantPanel = new JPanel(new FlowLayout());
+        restaurantPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 30, 10));
         for (String rest : menus.keySet()) {
-            JButton btn = new JButton(rest);
+            JButton btn = createStyledButton(rest);
+            btn.setPreferredSize(new Dimension(180, 50)); // Optional: makes all buttons same size
             btn.addActionListener(e -> showMenuForRestaurant(rest));
             restaurantPanel.add(btn);
         }
-        contextPanel.add(restaurantPanel, "restaurants");
+
+        // Wrapper panel to center restaurantPanel vertically and horizontally
+        JPanel wrapperPanel = new JPanel();
+        wrapperPanel.setLayout(new BoxLayout(wrapperPanel, BoxLayout.Y_AXIS));
+        wrapperPanel.add(Box.createVerticalGlue());    // Pushes down
+        wrapperPanel.add(restaurantPanel);
+        wrapperPanel.add(Box.createVerticalGlue());    // Pushes up
+
+        // Make sure the buttons are centered horizontally too
+        restaurantPanel.setAlignmentX(Component.CENTER_ALIGNMENT);
+
+        contextPanel.add(wrapperPanel, "restaurants");
 
         // Menu + Basket View
         menuAndBasketPanel = new JPanel(new GridLayout(1, 2));
@@ -85,7 +97,7 @@ public class LieferanDDDOSwingUI extends JFrame {
         basketListModel = new DefaultListModel<>();
         JList<String> basketList = new JList<>(basketListModel);
         basketTotalLabel = new JLabel("Total: 0€");
-        JButton placeBasketOrderBtn = new JButton("Place Order");
+        JButton placeBasketOrderBtn = createStyledButton("Place Order");
 
         basketPanel.add(new JLabel("Basket"), BorderLayout.NORTH);
         basketPanel.add(new JScrollPane(basketList), BorderLayout.CENTER);
@@ -130,7 +142,7 @@ public class LieferanDDDOSwingUI extends JFrame {
 
         // For each menu item, create a button
         for (String item : menus.get(restaurant)) {
-            JButton btn = new JButton(item);
+            JButton btn = createStyledButton(item);
             btn.setMaximumSize(new Dimension(180, 40));
             btn.addActionListener(e -> {
                 basket.merge(item, 1, Integer::sum);
@@ -155,5 +167,56 @@ public class LieferanDDDOSwingUI extends JFrame {
             total += entry.getValue() * 6; // Placeholder: 6€/item
         }
         basketTotalLabel.setText("Total: " + total + "€");
+    }
+
+    private JButton createStyledButton(String text) {
+        JButton button = new RoundedButton(text, new Color(255, 128, 0));
+        // No need for MouseListener—the hover color is in the paintComponent!
+        return button;
+    }
+
+    private static class RoundedButton extends JButton {
+        private final Color backgroundColor;
+
+        public RoundedButton(String text, Color bgColor) {
+            super(text);
+            this.backgroundColor = bgColor;
+            setFocusPainted(false);
+            setForeground(Color.WHITE);
+            setFont(new Font("Arial", Font.BOLD, 15));
+            setContentAreaFilled(false); // We'll handle background painting
+            setBorderPainted(false);
+            setCursor(new Cursor(Cursor.HAND_CURSOR));
+            setMargin(new Insets(10, 22, 10, 22));
+        }
+
+        @Override
+        protected void paintComponent(Graphics g) {
+            Graphics2D g2 = (Graphics2D) g.create();
+            g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+            g2.setColor(getModel().isRollover() ? new Color(255, 150, 40) : backgroundColor);
+            g2.fillRoundRect(0, 0, getWidth(), getHeight(), 24, 24);
+            super.paintComponent(g);
+            g2.dispose();
+        }
+
+        @Override
+        public void paintBorder(Graphics g) {
+            Graphics2D g2 = (Graphics2D) g.create();
+            g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+            g2.setColor(Color.GRAY); // Use a light or dark grey as you prefer
+            g2.setStroke(new BasicStroke(3)); // Thicker border (optional)
+            g2.drawRoundRect(1, 1, getWidth()-3, getHeight()-3, 24, 24);
+            g2.dispose();
+        }
+
+        @Override
+        public boolean isContentAreaFilled() {
+            return false; // We paint it ourselves
+        }
+    }
+
+    public static void main(String[] args) {
+        SwingUtilities.invokeLater(() -> new LieferanDDDOSwingUI().setVisible(true));
     }
 }
