@@ -1,4 +1,5 @@
 // This shows how you might use the system in a main method
+// Einstiegspunkt der Anwendung
 package com.fooddelivery;
 
 import com.fooddelivery.application.OrderApplicationService;
