@@ -62,6 +62,14 @@ public class OrderApplicationService {
         return order.getId();
     }
 
+    public PaymentIntegrationService getPaymentIntegrationService() {
+        return paymentIntegrationService;
+    }
+
+    public OrderService getOrderService() {
+        return orderService;
+    }
+
     // DTO for the application layer
     public static class OrderItemRequest {
         private final String menuItemId;

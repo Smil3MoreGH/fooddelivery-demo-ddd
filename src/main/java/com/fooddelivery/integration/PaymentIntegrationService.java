@@ -2,6 +2,7 @@
 package com.fooddelivery.integration;
 
 import com.fooddelivery.ordermanagement.domain.*;
+import com.fooddelivery.ordermanagement.domain.Money;
 import com.fooddelivery.ordermanagement.service.*;
 import com.fooddelivery.payment.domain.*;
 
@@ -22,7 +23,7 @@ public class PaymentIntegrationService {
         if (order == null) return false;
 
         // Convert Order Money (from OrderContext) to Payment Money (PaymentContext)
-        com.fooddelivery.ordermanagement.domain.Money orderTotal = order.calculateTotal();
+        Money orderTotal = order.calculateTotal();
         com.fooddelivery.payment.domain.Money paymentAmount =
                 new com.fooddelivery.payment.domain.Money(orderTotal.getAmount(), orderTotal.getCurrency());
 

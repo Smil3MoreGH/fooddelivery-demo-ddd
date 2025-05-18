@@ -31,4 +31,7 @@ public class OrderService {
             orderRepository.save(order);
         }
     }
+    public OrderRepository getOrderRepository() {
+        return orderRepository;
+    }
 }
