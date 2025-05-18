@@ -140,21 +140,31 @@ public class LieferanDDDOSwingUI extends JFrame {
         basketTotalLabel.setText("Total: 0€");
         currentRestaurant = restaurant;
 
+        // Add vertical glue at the top
+        menuPanel.add(Box.createVerticalGlue());
+
         // For each menu item, create a button
         for (String item : menus.get(restaurant)) {
             JButton btn = createStyledButton(item);
             btn.setMaximumSize(new Dimension(180, 40));
+            btn.setAlignmentX(Component.CENTER_ALIGNMENT); // <-- This line centers the button horizontally!
             btn.addActionListener(e -> {
                 basket.merge(item, 1, Integer::sum);
                 updateBasket();
             });
             menuPanel.add(btn);
-            menuPanel.add(Box.createVerticalStrut(10)); // Add spacing between buttons
+            menuPanel.add(Box.createVerticalStrut(10));
         }
 
         menuPanel.revalidate();
         menuPanel.repaint();
+        // Remove last strut (optional, to avoid extra space at bottom)
+        if (menuPanel.getComponentCount() > 1) {
+            menuPanel.remove(menuPanel.getComponentCount() - 1);
+        }
 
+        // Add vertical glue at the bottom
+        menuPanel.add(Box.createVerticalGlue());
         // Switch the context panel to the menu/basket view
         ((CardLayout)contextPanel.getLayout()).show(contextPanel, "menu");
     }

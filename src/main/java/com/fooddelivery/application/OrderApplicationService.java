@@ -4,7 +4,9 @@ package com.fooddelivery.application;
 import com.fooddelivery.integration.PaymentIntegrationService;
 import com.fooddelivery.ordermanagement.service.*;
 import com.fooddelivery.ordermanagement.domain.*;
-import com.fooddelivery.restaurant.domain.*;
+import com.fooddelivery.restaurant.domain.Menu;
+import com.fooddelivery.restaurant.domain.MenuItem;
+import com.fooddelivery.restaurant.domain.MenuRepository;
 
 import java.util.List;
 

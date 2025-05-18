@@ -7,7 +7,10 @@ import com.fooddelivery.application.OrderApplicationService.OrderItemRequest;
 import com.fooddelivery.ordermanagement.domain.*;
 import com.fooddelivery.ordermanagement.service.*;
 import com.fooddelivery.payment.domain.*;
-import com.fooddelivery.restaurant.domain.*;
+import com.fooddelivery.restaurant.domain.Menu;
+import com.fooddelivery.restaurant.domain.MenuItem;
+import com.fooddelivery.restaurant.domain.MenuRepository;
+import com.fooddelivery.restaurant.domain.Price;
 import com.fooddelivery.integration.PaymentIntegrationService;
 
 import java.util.*;
