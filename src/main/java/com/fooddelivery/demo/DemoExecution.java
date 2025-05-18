@@ -1,6 +1,6 @@
 // This shows how you might use the system in a main method
 // UI
-package com.fooddelivery;
+package com.fooddelivery.demo;
 
 import com.fooddelivery.application.OrderApplicationService;
 import com.fooddelivery.application.OrderApplicationService.OrderItemRequest;

@@ -1,4 +1,4 @@
-package com.fooddelivery;
+package com.fooddelivery.demo;
 
 import com.fooddelivery.application.*;
 import com.fooddelivery.ordermanagement.domain.*;
@@ -12,7 +12,6 @@ import com.fooddelivery.restaurant.domain.Price;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.*;
 import java.util.*;
 import java.util.List;
 
