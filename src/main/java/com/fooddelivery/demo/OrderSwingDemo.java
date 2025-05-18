@@ -1,4 +1,4 @@
-package com.fooddelivery.demo;
+/*package com.fooddelivery.demo;
 
 import com.fooddelivery.application.*;
 import com.fooddelivery.ordermanagement.domain.*;
@@ -170,3 +170,4 @@ public class OrderSwingDemo extends JFrame {
         SwingUtilities.invokeLater(() -> new OrderSwingDemo().setVisible(true));
     }
 }
+*/
