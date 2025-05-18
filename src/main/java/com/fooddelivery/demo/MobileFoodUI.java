@@ -1,5 +1,7 @@
 package com.fooddelivery.demo;
 
+import com.fooddelivery.ordermanagement.domain.Address;
+import com.fooddelivery.ordermanagement.domain.Order;
 import com.fooddelivery.ordermanagement.domain.Restaurant;
 import com.fooddelivery.restaurant.domain.Menu;
 import com.fooddelivery.restaurant.domain.MenuItem;
@@ -14,6 +16,11 @@ import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.*;
 import javafx.stage.Stage;
+import com.fooddelivery.integration.PaymentIntegrationService;
+import com.fooddelivery.ordermanagement.infrastructure.SqliteOrderRepository;
+import com.fooddelivery.ordermanagement.service.OrderService;
+import com.fooddelivery.payment.domain.PaymentService;
+import com.fooddelivery.payment.infrastructure.SqlitePaymentRepository;
 
 import java.util.List;
 
@@ -29,8 +36,11 @@ public class MobileFoodUI extends Application {
 
     private final SqliteRestaurantRepository restaurantRepo = new SqliteRestaurantRepository();
     private final SqliteMenuRepository menuRepo = new SqliteMenuRepository();
-
     private final Basket basket = new Basket();
+    private final PaymentIntegrationService paymentIntegrationService = new PaymentIntegrationService(
+            new OrderService(new SqliteOrderRepository()),
+            new PaymentService(new SqlitePaymentRepository())
+    );
 
     @Override
     public void start(Stage stage) {
@@ -117,7 +127,6 @@ public class MobileFoodUI extends Application {
         stage.setScene(menuScene);
     }
 
-
     // **Card-Design für Menü-Item**
     private HBox createMenuItemCard(MenuItem item, Stage stage, Restaurant restaurant) {
         HBox card = new HBox(20);
@@ -152,7 +161,6 @@ public class MobileFoodUI extends Application {
 
         return card;
     }
-
 
     // **Warenkorb aktualisieren/anzeigen**
     private void updateBasketBox(VBox basketBox, Stage stage, Restaurant restaurant) {
@@ -196,8 +204,6 @@ public class MobileFoodUI extends Application {
             basketBox.getChildren().add(orderBtn); // Nur anzeigen, wenn was drin ist!
         }
     }
-
-
 
     private HBox createRestaurantCard(String imgFile, String name, String address, String tag, String time, String chip, String chipColor) {
         HBox card = new HBox(22);
@@ -262,22 +268,17 @@ public class MobileFoodUI extends Application {
 
         javafx.scene.control.Button submitBtn = new javafx.scene.control.Button("Bestellung absenden");
         submitBtn.setOnAction(e -> {
-            // HIER: Validierung und Order speichern!
-            // Beispiel:
             String name = nameField.getText();
             String street = streetField.getText();
             String city = cityField.getText();
-
             if (name.isBlank() || street.isBlank() || city.isBlank()) {
-                // Zeige eine Warnung
                 root.getChildren().add(new Label("Bitte alle Felder ausfüllen!"));
             } else {
-                // TODO: Bestellung speichern (in DB) und ggf. Payment
-                // Dann ggf. Danke-Seite anzeigen oder zurück
-                root.getChildren().clear();
-                Label done = new Label("Vielen Dank für deine Bestellung!");
-                done.setStyle("-fx-font-size:1.2em; -fx-font-weight:600;");
-                root.getChildren().add(done);
+                double total = 0.0;
+                for (MenuItem item : basket.getItems()) {
+                    total += item.getPrice().getValue();
+                }
+                openPaymentPage(stage, restaurant, name, street, city, total);
             }
         });
 
@@ -292,6 +293,76 @@ public class MobileFoodUI extends Application {
         stage.setScene(orderScene);
     }
 
+    private void openPaymentPage(Stage stage, Restaurant restaurant, String name, String street, String city, double total) {
+        VBox root = new VBox(20);
+        root.setPadding(new Insets(30));
+        root.setAlignment(Pos.TOP_CENTER);
+
+        Label title = new Label("Bezahlen");
+        title.setStyle("-fx-font-size:1.3em; -fx-font-weight:bold;");
+        root.getChildren().add(title);
+
+        Label sum = new Label("Gesamtbetrag: " + String.format("%.2f €", total));
+        sum.setStyle("-fx-font-size:1.2em; -fx-font-weight:600;");
+        root.getChildren().add(sum);
+
+        javafx.scene.control.Button paypalBtn = new javafx.scene.control.Button("Mit PayPal bezahlen");
+        javafx.scene.control.Button fakeOrderBtn = new javafx.scene.control.Button("Bestellen ohne Bezahlen");
+        root.getChildren().addAll(paypalBtn, fakeOrderBtn);
+
+        paypalBtn.setOnAction(e -> {
+            boolean success = paymentIntegrationService.payAndCreateOrder(
+                    name,
+                    street,
+                    city,
+                    restaurant.getId(),
+                    basket.getItems(),
+                    total,
+                    "PAYPAL"
+            );
+            root.getChildren().clear();
+            if (success) {
+                Label thanks = new Label("Vielen Dank für deine Zahlung und Bestellung!");
+                thanks.setStyle("-fx-font-size:1.2em; -fx-font-weight:600;");
+                root.getChildren().add(thanks);
+                basket.clear();
+            } else {
+                root.getChildren().add(new Label("Zahlung fehlgeschlagen! Bitte bezahle zuerst."));
+            }
+        });
+
+        fakeOrderBtn.setOnAction(e -> {
+            boolean success = paymentIntegrationService.payAndCreateOrder(
+                    name,
+                    street,
+                    city,
+                    restaurant.getId(),
+                    basket.getItems(),
+                    total,
+                    "NONE"
+            );
+            root.getChildren().clear();
+            if (success) {
+                Label thanks = new Label("Bestellung wurde ohne Bezahlung durchgeführt (sollte nicht passieren)!");
+                thanks.setStyle("-fx-font-size:1.2em; -fx-font-weight:600;");
+                root.getChildren().add(thanks);
+                basket.clear();
+            } else {
+                Label error = new Label("Fehler: Bitte bezahle erst, bevor du bestellst!");
+                error.setStyle("-fx-font-size:1.1em; -fx-text-fill: #ff3333; -fx-font-weight:600;");
+                root.getChildren().add(error);
+                root.getChildren().add(paypalBtn);
+            }
+        });
+
+        javafx.scene.control.Button backBtn = new javafx.scene.control.Button("Zurück");
+        backBtn.setOnAction(e -> openOrderPage(stage, restaurant));
+        root.getChildren().add(backBtn);
+
+        Scene paymentScene = new Scene(root, 430, 840);
+        paymentScene.getStylesheets().add(getClass().getResource("/mobile-food.css").toExternalForm());
+        stage.setScene(paymentScene);
+    }
 
     private String getImageForRestaurant(String restaurantName) {
         return switch (restaurantName) {

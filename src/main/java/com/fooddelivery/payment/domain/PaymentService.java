@@ -26,4 +26,8 @@ public class PaymentService {
         paymentRepository.save(payment);
         return payment;
     }
+
+    public PaymentRepository getRepository() {
+        return paymentRepository;
+    }
 }
