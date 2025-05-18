@@ -1,7 +1,13 @@
 package com.fooddelivery.demo;
 
 import com.fooddelivery.ordermanagement.domain.Address;
+import com.fooddelivery.ordermanagement.domain.Order;
+import com.fooddelivery.ordermanagement.domain.OrderItem;
 import com.fooddelivery.ordermanagement.domain.Restaurant;
+import com.fooddelivery.ordermanagement.infrastructure.SqliteOrderRepository;
+import com.fooddelivery.ordermanagement.domain.Money;
+import com.fooddelivery.payment.domain.Payment;
+import com.fooddelivery.payment.infrastructure.SqlitePaymentRepository;
 import com.fooddelivery.restaurant.domain.Menu;
 import com.fooddelivery.restaurant.domain.MenuItem;
 import com.fooddelivery.restaurant.domain.Price;
@@ -10,6 +16,7 @@ import com.fooddelivery.restaurant.infrastructure.SqliteRestaurantRepository;
 
 public class DemoDbInitializer {
     private static final String DB_PATH = "./order_management.db";
+
     public static void seedRestaurantsAndMenus() {
         SqliteRestaurantRepository restaurantRepo = new SqliteRestaurantRepository();
         SqliteMenuRepository menuRepo = new SqliteMenuRepository();
@@ -50,6 +57,41 @@ public class DemoDbInitializer {
         saladMenu.addItem(new MenuItem("salat-3", "Quinoa Bowl", "Quinoa, Kichererbsen, Gemüse", new Price(11.29, "EUR")));
         menuRepo.save(saladMenu);
 
+        // === DUMMY ORDER & PAYMENT ===
+        SqliteOrderRepository orderRepo = new SqliteOrderRepository();
+        SqlitePaymentRepository paymentRepo = new SqlitePaymentRepository();
+
+        String dummyOrderId = "order-demo-1";
+        String dummyCustomerId = "customer-demo";
+        String dummyRestaurantId = "rest-burger";
+        Address dummyAddress = new Address("Teststraße 12", "12345", "Testhausen");
+
+        // Dummy-Order anlegen
+        Order dummyOrder = new Order(dummyOrderId, dummyCustomerId, dummyRestaurantId, dummyAddress);
+
+        // OrderItem mit deiner eigenen Money-Klasse hinzufügen
+        Money burgerPrice = new Money(8.99, "EUR");
+        OrderItem burgerItem = new OrderItem("burger-1", "Cheeseburger", 1, burgerPrice);
+        dummyOrder.addItem(burgerItem);
+
+        // Jetzt Status setzen
+        dummyOrder.confirm();
+        dummyOrder.markAsPaid();
+
+        orderRepo.save(dummyOrder);
+
+        // Dummy Payment für die Order
+        // ACHTUNG: Falls payment.domain.Money ein anderes Package ist,
+        // kannst du evtl. auch einfach deine Money-Klasse verwenden,
+        // oder ein separates Objekt bauen, je nach deiner Payment-Klasse!
+        com.fooddelivery.payment.domain.Money paymentAmount = new com.fooddelivery.payment.domain.Money(8.99, "EUR");
+        String dummyPaymentId = "payment-demo-1";
+        Payment dummyPayment = new Payment(dummyPaymentId, dummyOrderId, paymentAmount, "Kreditkarte");
+        dummyPayment.markAsCompleted("TRANSACTION12345");
+
+        paymentRepo.save(dummyPayment);
+
         System.out.println("Drei Restaurants mit Menüs wurden angelegt!");
+        System.out.println("Dummy Order und Dummy Payment wurden angelegt!");
     }
 }

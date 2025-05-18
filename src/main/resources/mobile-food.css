@@ -1,0 +1,45 @@
+.root {
+    -fx-background-color: #F6F6F9;
+}
+
+.card {
+    -fx-background-color: #FFF;
+    -fx-border-radius: 22;
+    -fx-background-radius: 22;
+    -fx-effect: dropshadow(gaussian, #E3E3E3, 8, 0.2, 0, 2);
+    -fx-padding: 22 26 22 26;
+    -fx-spacing: 14;
+    -fx-pref-height: 150;
+    -fx-cursor: hand;
+    -fx-border-width: 1;
+    -fx-border-color: #F4F4F4;
+}
+
+.card-title {
+    -fx-font-size: 1.3em;
+    -fx-font-weight: bold;
+    -fx-text-fill: #222;
+}
+
+.card-address {
+    -fx-font-size: 1em;
+    -fx-text-fill: #888;
+}
+
+.chip {
+    -fx-background-color: #FF8000;
+    -fx-background-radius: 13;
+    -fx-padding: 3 16 3 16;
+    -fx-text-fill: white;
+    -fx-font-size: 1em;
+    -fx-font-weight: 600;
+}
+
+.chip-green {
+    -fx-background-color: #3FC06E;
+}
+
+.chip-yellow {
+    -fx-background-color: #FFC700;
+    -fx-text-fill: #444;
+}

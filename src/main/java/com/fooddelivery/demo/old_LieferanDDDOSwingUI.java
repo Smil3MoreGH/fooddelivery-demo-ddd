@@ -2,11 +2,10 @@ package com.fooddelivery.demo;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.*;
 import java.util.*;
 import java.util.List;
 
-public class LieferanDDDOSwingUI extends JFrame {
+public class old_LieferanDDDOSwingUI extends JFrame {
     private JPanel contextPanel; // "Card" area that changes
     private JPanel restaurantPanel;
     private JPanel menuAndBasketPanel;
@@ -22,7 +21,7 @@ public class LieferanDDDOSwingUI extends JFrame {
     private Map<String, List<String>> menus = new HashMap<>(); // restaurant -> items
     private String currentRestaurant = null;
 
-    public LieferanDDDOSwingUI() {
+    public old_LieferanDDDOSwingUI() {
         super("LieferanDDDo");
 
         // --- Orange Title Bar ---
@@ -227,6 +226,6 @@ public class LieferanDDDOSwingUI extends JFrame {
     }
 
     public static void main(String[] args) {
-        SwingUtilities.invokeLater(() -> new LieferanDDDOSwingUI().setVisible(true));
+        SwingUtilities.invokeLater(() -> new old_LieferanDDDOSwingUI().setVisible(true));
     }
 }
