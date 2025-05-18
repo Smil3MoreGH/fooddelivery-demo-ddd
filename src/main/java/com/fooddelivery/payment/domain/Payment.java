@@ -1,20 +1,18 @@
 package com.fooddelivery.payment.domain;
 
-import com.fooddelivery.ordermanagement.domain.Money;
-
 import java.time.LocalDateTime;
 
 // Payment is the Aggregate Root in this context
+
 public class Payment {
     private final String id;
     private final String orderId;
-    private final com.fooddelivery.ordermanagement.domain.Money amount;
+    private final com.fooddelivery.payment.domain.Money amount;
     private PaymentStatus status;
     private String paymentMethod;
     private String transactionReference;
     private LocalDateTime processedAt;
-
-    public Payment(String id, String orderId, com.fooddelivery.ordermanagement.domain.Money amount, String paymentMethod) {
+    public Payment(String id, String orderId, com.fooddelivery.payment.domain.Money amount, String paymentMethod) {
         this.id = id;
         this.orderId = orderId;
         this.amount = amount;
@@ -48,7 +46,7 @@ public class Payment {
 
     public String getId() { return id; }
     public String getOrderId() { return orderId; }
-    public Money getAmount() { return amount; }
+    public com.fooddelivery.payment.domain.Money getAmount() { return amount; }
     public PaymentStatus getStatus() { return status; }
     public String getPaymentMethod() { return paymentMethod; }
     public String getTransactionReference() { return transactionReference; }

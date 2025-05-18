@@ -1,10 +1,7 @@
 package com.fooddelivery.payment.domain;
 
-import com.fooddelivery.ordermanagement.domain.Money;
-
 import java.util.UUID;
 
-// Domain Service in Payment Context
 public class PaymentService {
     private final PaymentRepository paymentRepository;
 
