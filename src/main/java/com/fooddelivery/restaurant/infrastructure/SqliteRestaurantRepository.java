@@ -2,7 +2,6 @@ package com.fooddelivery.restaurant.infrastructure;
 
 import com.fooddelivery.ordermanagement.domain.Address;
 import com.fooddelivery.ordermanagement.domain.Restaurant;
-import com.fooddelivery.restaurant.domain.MenuRepository; // Falls du hier RestaurantRepository nennst, entsprechend anpassen!
 
 import java.sql.*;
 import java.util.*;

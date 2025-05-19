@@ -9,7 +9,7 @@ public class MenuItem {
     private final String id;
     private String name;
     private String description;
-    private Price price;
+    private Price price; // Value Object
     private List<String> allergens;
     private boolean available;
 
@@ -26,6 +26,7 @@ public class MenuItem {
         this.price = newPrice;
     }
 
+    // Method to set item availability
     public void setAvailability(boolean available) {
         this.available = available;
     }

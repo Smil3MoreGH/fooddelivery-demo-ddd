@@ -15,7 +15,7 @@ public class Menu {
         this.restaurantId = restaurantId;
         this.items = new ArrayList<>();
     }
-
+    // Adds a MenuItem to the Menu after checking for duplicate IDs
     public void addItem(MenuItem item) {
         // Check for duplicate item IDs
         for (MenuItem existingItem : items) {
@@ -27,6 +27,7 @@ public class Menu {
         items.add(item);
     }
 
+    // Removes item by ID
     public void removeItem(String itemId) {
         items.removeIf(item -> item.getId().equals(itemId));
     }
@@ -49,5 +50,7 @@ public class Menu {
     // Getters
     public String getId() { return id; }
     public String getRestaurantId() { return restaurantId; }
+
+    // prevennts external mutation
     public List<MenuItem> getItems() { return Collections.unmodifiableList(items); }
 }

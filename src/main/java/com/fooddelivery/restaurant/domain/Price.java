@@ -1,6 +1,7 @@
 package com.fooddelivery.restaurant.domain;
 
-// Price Value Object
+// Price Value Object (immutable)
+
 public class Price {
     private final double value;
     private final String currency;
