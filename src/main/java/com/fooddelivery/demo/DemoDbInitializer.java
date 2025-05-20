@@ -15,7 +15,7 @@ import com.fooddelivery.restaurant.infrastructure.SqliteMenuRepository;
 import com.fooddelivery.restaurant.infrastructure.SqliteRestaurantRepository;
 
 public class DemoDbInitializer {
-    private static final String DB_PATH = "./order_management.db";
+    //private static final String DB_PATH = "./order_management.db";
 
     public static void seedRestaurantsAndMenus() {
         SqliteRestaurantRepository restaurantRepo = new SqliteRestaurantRepository();
