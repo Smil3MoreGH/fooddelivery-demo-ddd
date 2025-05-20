@@ -1,7 +1,6 @@
 package com.fooddelivery.demo;
 
 import com.fooddelivery.ordermanagement.domain.Address;
-//import com.fooddelivery.ordermanagement.domain.Order;
 import com.fooddelivery.ordermanagement.domain.Restaurant;
 import com.fooddelivery.restaurant.domain.Menu;
 import com.fooddelivery.restaurant.domain.MenuItem;
@@ -29,7 +28,7 @@ import com.fooddelivery.payment.service.PaymentService;
 import java.util.ArrayList;
 import java.util.List;
 
-// --- Einfache Basket-Klasse (du kannst sie in eine eigene Datei auslagern!) ---
+// Warenkorb (einfach gehalten)
 class Basket {
     private final List<MenuItem> items = new java.util.ArrayList<>();
     public void addItem(MenuItem item) { items.add(item); }
@@ -50,9 +49,10 @@ public class MobileFoodUI extends Application {
 
     @Override
     public void start(Stage stage) {
-        showRestaurantList(stage);
+        showRestaurantList(stage); // Startscreen: Restaurant-Auswahl
     }
 
+    // Restaurant-Liste anzeigen
     private void showRestaurantList(Stage stage) {
         VBox root = new VBox(20);
         root.setPadding(new Insets(22));
@@ -75,8 +75,7 @@ public class MobileFoodUI extends Application {
                     restaurant.getAddress().getStreet(),
                     "Küche", "20–30 min", "Top Angebot", "#FF8000"
             );
-            // Beim Klick: Menü-Seite öffnen!
-            card.setOnMouseClicked(e -> openMenuPage(stage, restaurant));
+            card.setOnMouseClicked(e -> openMenuPage(stage, restaurant)); // Klick: Menü-Seite öffnen
             cardList.getChildren().add(card);
         }
 
@@ -89,6 +88,7 @@ public class MobileFoodUI extends Application {
         stage.show();
     }
 
+    // Menü-Seite für Restaurant
     private void openMenuPage(Stage stage, Restaurant restaurant) {
         Menu menu = menuRepo.findByRestaurantId(restaurant.getId());
 
@@ -112,14 +112,13 @@ public class MobileFoodUI extends Application {
             menuList.getChildren().add(new Label("Kein Menü verfügbar."));
         }
 
-        // Warenkorb unten
+        // Warenkorb-Bereich unten
         VBox basketBox = new VBox(10);
         basketBox.setPadding(new Insets(15, 0, 0, 0));
         basketBox.setAlignment(Pos.TOP_CENTER);
         basketBox.setStyle("-fx-background-color: #f6f6f6; -fx-border-radius: 10; -fx-background-radius: 10;");
         updateBasketBox(basketBox, stage, restaurant);
 
-        // Hier sorgt das dafür, dass menuList den ganzen Platz nimmt, und basketBox immer unten bleibt!
         VBox.setVgrow(menuList, Priority.ALWAYS);
 
         root.getChildren().addAll(menuList, basketBox);
@@ -133,7 +132,7 @@ public class MobileFoodUI extends Application {
         stage.setScene(menuScene);
     }
 
-    // **Card-Design für Menü-Item**
+    // Menü-Item-Karte
     private HBox createMenuItemCard(MenuItem item, Stage stage, Restaurant restaurant) {
         HBox card = new HBox(20);
         card.setPadding(new Insets(14));
@@ -156,19 +155,18 @@ public class MobileFoodUI extends Application {
 
         card.getChildren().addAll(info, spacer, price);
 
-        // Dies ist wichtig:
+        // Klick: Item in den Warenkorb
         card.setOnMouseClicked(e -> {
             basket.addItem(item);
-            // Finde das basketBox-Element sauber im SceneGraph (über die Parent-Chain):
             VBox root = (VBox) card.getParent().getParent();
-            VBox basketBox = (VBox) root.getChildren().get(root.getChildren().size() - 2); // Vorletztes Element ist basketBox
+            VBox basketBox = (VBox) root.getChildren().get(root.getChildren().size() - 2);
             updateBasketBox(basketBox, stage, restaurant);
         });
 
         return card;
     }
 
-    // **Warenkorb aktualisieren/anzeigen**
+    // Warenkorb anzeigen/aktualisieren
     private void updateBasketBox(VBox basketBox, Stage stage, Restaurant restaurant) {
         basketBox.getChildren().clear();
 
@@ -201,16 +199,17 @@ public class MobileFoodUI extends Application {
             updateBasketBox(basketBox, stage, restaurant);
         });
 
-        // --- Bestellen-Button ---
+        // Bestellen-Button
         javafx.scene.control.Button orderBtn = new javafx.scene.control.Button("Bestellen");
         orderBtn.setOnAction(e -> openOrderPage(stage, restaurant));
 
         basketBox.getChildren().addAll(basketTitle, items, totalLabel, clearBtn);
         if (!basket.getItems().isEmpty()) {
-            basketBox.getChildren().add(orderBtn); // Nur anzeigen, wenn was drin ist!
+            basketBox.getChildren().add(orderBtn);
         }
     }
 
+    // Restaurant-Karten
     private HBox createRestaurantCard(String imgFile, String name, String address, String tag, String time, String chip, String chipColor) {
         HBox card = new HBox(22);
         card.getStyleClass().add("card");
@@ -220,7 +219,7 @@ public class MobileFoodUI extends Application {
         try {
             img = new ImageView(new Image(getClass().getResourceAsStream("/" + imgFile)));
         } catch (Exception e) {
-            img = new ImageView(); // Leeres Bild
+            img = new ImageView();
         }
         img.setFitHeight(88);
         img.setFitWidth(88);
@@ -251,6 +250,7 @@ public class MobileFoodUI extends Application {
         return card;
     }
 
+    // Seite: Adresse + Bestellung absenden
     private void openOrderPage(Stage stage, Restaurant restaurant) {
         VBox root = new VBox(18);
         root.setPadding(new Insets(30));
@@ -260,7 +260,7 @@ public class MobileFoodUI extends Application {
         title.setStyle("-fx-font-size:1.4em; -fx-font-weight: bold;");
         root.getChildren().add(title);
 
-        // Felder für Adresse usw.
+        // Adressfelder
         javafx.scene.control.TextField nameField = new javafx.scene.control.TextField();
         nameField.setPromptText("Name");
 
@@ -269,8 +269,6 @@ public class MobileFoodUI extends Application {
 
         javafx.scene.control.TextField cityField = new javafx.scene.control.TextField();
         cityField.setPromptText("PLZ und Ort");
-
-        // Optional: weitere Felder wie Telefonnummer, Zahlungsart...
 
         javafx.scene.control.Button submitBtn = new javafx.scene.control.Button("Bestellung absenden");
         submitBtn.setOnAction(e -> {
@@ -299,6 +297,7 @@ public class MobileFoodUI extends Application {
         stage.setScene(orderScene);
     }
 
+    // Zahlungsseite anzeigen
     private void openPaymentPage(Stage stage, Restaurant restaurant, String name, String street, String city, double total) {
         VBox root = new VBox(20);
         root.setPadding(new Insets(30));
@@ -316,11 +315,10 @@ public class MobileFoodUI extends Application {
         root.getChildren().add(paypalBtn);
 
         paypalBtn.setOnAction(e -> {
-            // Erzeuge Order (CREATED) und Payment (PENDING)
+            // Order & Payment erzeugen
             String[] ids = createOrderAndPayment(name, street, city, restaurant);
             String orderId = ids[0];
             String paymentId = ids[1];
-            // Ladeanimation anzeigen und Buttons
             openPaymentLoadingPage(stage, orderId, paymentId, restaurant, total);
         });
 
@@ -333,27 +331,25 @@ public class MobileFoodUI extends Application {
         stage.setScene(paymentScene);
     }
 
+    // Order + Payment anlegen, IDs zurückgeben
     private String[] createOrderAndPayment(String name, String street, String city, Restaurant restaurant) {
         Address address = new Address(street, "00000", city);
         List<OrderItemRequest> itemRequests = new ArrayList<>();
         for (MenuItem item : basket.getItems()) {
             itemRequests.add(new OrderItemRequest(item.getId(), 1));
         }
-        // Diese Methode sollte die Order und Payment-IDs zurückgeben!
-        // Passe OrderApplicationService an, falls nötig!
         return orderApplicationService.createOrderAndPayment(name, restaurant.getId(), address, itemRequests);
     }
 
+    // Lade-/Zahlungsstatus-Seite
     private void openPaymentLoadingPage(Stage stage, String orderId, String paymentId, Restaurant restaurant, double total) {
         VBox root = new VBox(30);
         root.setPadding(new Insets(60));
         root.setAlignment(Pos.CENTER);
 
-        // Loading Animation (z.B. ein rotierender Kreis oder GIF)
         Label loading = new Label("Warte auf Bestätigung ...");
         loading.setStyle("-fx-font-size: 1.1em; -fx-font-weight: 500;");
 
-        // Optional: Echte Animation hinzufügen
         ProgressIndicator pi = new ProgressIndicator();
         pi.setPrefSize(56, 56);
 
@@ -363,7 +359,7 @@ public class MobileFoodUI extends Application {
         javafx.scene.control.Button cancelBtn = new javafx.scene.control.Button("Zurück ohne Bezahlen");
 
         confirmBtn.setOnAction(e -> {
-            // Update beide Einträge: Order (CONFIRMED), Payment (COMPLETED)
+            // Bestellung als bestätigt + bezahlt markieren
             orderApplicationService.updateOrderStatusAndPaid(orderId, "CONFIRMED", true);
             orderApplicationService.updatePaymentStatus(paymentId, "COMPLETED");
             basket.clear();
@@ -371,7 +367,7 @@ public class MobileFoodUI extends Application {
         });
 
         cancelBtn.setOnAction(e -> {
-            // Update beide Einträge: Order (CANCELLED), Payment (FAILED)
+            // Bestellung stornieren
             orderApplicationService.updateOrderStatus(orderId, "CANCELLED");
             orderApplicationService.updatePaymentStatus(paymentId, "FAILED");
             showConfirmation(stage, "Bezahlung abgebrochen. Bestellung storniert.");
@@ -386,6 +382,7 @@ public class MobileFoodUI extends Application {
         stage.setScene(scene);
     }
 
+    // Bestätigungsseite
     private void showConfirmation(Stage stage, String message) {
         VBox root = new VBox(32);
         root.setAlignment(Pos.CENTER);
@@ -403,24 +400,25 @@ public class MobileFoodUI extends Application {
         stage.setScene(scene);
     }
 
+    // Nicht verwendet, aber Beispiel für direkten Order+Zahlungsversuch
     private boolean tryPlaceOrderWithPayment(String name, String street, String city, Restaurant restaurant, boolean simulateSuccess) {
         Address address = new Address(street, "00000", city);
         List<OrderItemRequest> itemRequests = new ArrayList<>();
         for (MenuItem item : basket.getItems()) {
-            itemRequests.add(new OrderItemRequest(item.getId(), 1)); // You can use real quantity if you have it
+            itemRequests.add(new OrderItemRequest(item.getId(), 1));
         }
-        // Try to place order, returns orderId on success, null on error
         String orderId = orderApplicationService.placeOrder(
                 name,
                 restaurant.getId(),
                 address,
                 itemRequests,
-                "PAYPAL",     // or whatever method, could be passed in as param
+                "PAYPAL",
                 simulateSuccess
         );
         return orderId != null;
     }
 
+    // Hilfsmethode: Bild für Restaurant-Namen
     private String getImageForRestaurant(String restaurantName) {
         return switch (restaurantName) {
             case "Burger Place" -> "burger.png";

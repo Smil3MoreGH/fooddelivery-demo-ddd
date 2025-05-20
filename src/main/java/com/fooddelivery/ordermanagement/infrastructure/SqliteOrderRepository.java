@@ -7,15 +7,17 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
+// SQLite-Repository für Order-Persistenz
 public class SqliteOrderRepository implements OrderRepository {
     private static final String DB_PATH = "./order_management.db";
     private Connection connection;
 
     public SqliteOrderRepository() {
-        connect();
-        createTable();
+        connect();      // DB-Verbindung aufbauen
+        createTable();  // Tabelle anlegen (falls nicht vorhanden)
     }
 
+    // Verbindet zur SQLite-Datenbank
     private void connect() {
         try {
             connection = DriverManager.getConnection("jdbc:sqlite:" + DB_PATH);
@@ -24,6 +26,7 @@ public class SqliteOrderRepository implements OrderRepository {
         }
     }
 
+    // Legt die Orders-Tabelle an, falls noch nicht vorhanden
     private void createTable() {
         String orderTable = """
             CREATE TABLE IF NOT EXISTS orders (
@@ -43,6 +46,7 @@ public class SqliteOrderRepository implements OrderRepository {
         }
     }
 
+    // Speichert oder aktualisiert eine Order
     @Override
     public void save(Order order) {
         String sql = """
@@ -64,6 +68,7 @@ public class SqliteOrderRepository implements OrderRepository {
         }
     }
 
+    // Findet eine Order per ID
     @Override
     public Order findById(String id) {
         String sql = "SELECT * FROM orders WHERE id = ?";
@@ -80,6 +85,7 @@ public class SqliteOrderRepository implements OrderRepository {
         return null;
     }
 
+    // Alle Orders eines Kunden finden
     @Override
     public List<Order> findByCustomerId(String customerId) {
         String sql = "SELECT * FROM orders WHERE customer_id = ?";
@@ -97,6 +103,7 @@ public class SqliteOrderRepository implements OrderRepository {
         return result;
     }
 
+    // Alle Orders für ein Restaurant finden
     @Override
     public List<Order> findByRestaurantId(String restaurantId) {
         String sql = "SELECT * FROM orders WHERE restaurant_id = ?";
@@ -114,7 +121,7 @@ public class SqliteOrderRepository implements OrderRepository {
         return result;
     }
 
-    // Helper to map a ResultSet row to an Order domain object
+    // Hilfsmethode: wandelt DB-Zeile in Order-Domainobjekt um
     private Order mapToOrder(ResultSet rs) throws SQLException {
         String id = rs.getString("id");
         String customerId = rs.getString("customer_id");
@@ -124,7 +131,7 @@ public class SqliteOrderRepository implements OrderRepository {
         boolean isPaid = rs.getInt("is_paid") == 1;
         String createdAtStr = rs.getString("created_at");
 
-        // Default values for missing address fields
+        // Adresse mit Defaults (weil nur Straße gespeichert wird)
         Address address = new Address(
                 street != null ? street : "Unbekannte Straße",
                 "00000",
@@ -136,7 +143,8 @@ public class SqliteOrderRepository implements OrderRepository {
 
         // Für Demo: Items bleiben leer, DomainEvents werden ignoriert
         Order order = new Order(id, customerId, restaurantId, address);
-        // Status etc. nachträglich setzen
+
+        // Status und Flags korrekt nachbauen
         if (status != OrderStatus.CREATED) {
             switch (status) {
                 case CONFIRMED -> order.confirm();
@@ -171,8 +179,8 @@ public class SqliteOrderRepository implements OrderRepository {
         }
         if (isPaid) order.markAsPaid();
 
-        // createdAt nachträglich setzen (Workaround für Demo, ggf. Setter hinzufügen)
-        // In deiner Domain-Order gibt es keinen Setter, also bleibt es beim aktuellen Zeitpunkt
+        // createdAt kann in der Demo nicht direkt gesetzt werden (Workaround)
+        // In der echten Domain-Order ggf. Setter ergänzen
 
         return order;
     }

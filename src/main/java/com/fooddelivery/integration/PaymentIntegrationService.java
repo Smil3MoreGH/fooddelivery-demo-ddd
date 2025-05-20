@@ -12,18 +12,18 @@ public class PaymentIntegrationService {
         this.paymentService = paymentService;
     }
 
-    // Initiate payment for a given order, returning the Payment object
+    // Zahlungsprozess für eine Order anstoßen, gibt Payment-Objekt zurück
     public Payment initiatePaymentForOrder(Order order, String paymentMethod, boolean simulateSuccess) {
         Money paymentAmount = new Money(order.calculateTotal().getAmount(), order.calculateTotal().getCurrency());
         return paymentService.processPayment(order.getId(), paymentAmount, paymentMethod, simulateSuccess);
     }
 
-    // Speichere ein Payment-Objekt (z.B. nach Status-Update)
+    // Payment speichern (z.B. nach Status-Update)
     public void savePayment(Payment payment) {
         paymentService.save(payment);
     }
 
-    // Finde ein Payment anhand der ID
+    // Payment anhand der ID finden
     public Payment findById(String paymentId) {
         return paymentService.findById(paymentId);
     }

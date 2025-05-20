@@ -28,17 +28,15 @@ public class OrderApplicationService {
     }
 
     /**
-     * Neuer Workflow:
-     * - Erstellt eine Order mit Status CREATED.
-     * - Erstellt ein Payment mit Status PENDING.
-     * - Gibt beide IDs zurück.
+     * Erstellt Order + Payment (beides als Entwurf/PENDING).
+     * Gibt IDs zurück.
      */
     public String[] createOrderAndPayment(String customerId, String restaurantId, Address deliveryAddress, List<OrderItemRequest> itemRequests) {
-        // 1. Create Order aggregate mit Status CREATED
+        // Order anlegen (Status CREATED)
         Order order = orderService.createOrder(customerId, restaurantId, deliveryAddress);
         order.setStatus(OrderStatus.CREATED);
 
-        // 2. Add items to order
+        // Items aus Menü hinzufügen
         Menu menu = menuRepository.findByRestaurantId(restaurantId);
         List<OrderItem> items = new ArrayList<>();
         for (OrderItemRequest itemRequest : itemRequests) {
@@ -54,19 +52,23 @@ public class OrderApplicationService {
         }
         orderService.addItems(order, items);
 
-        // 3. Save order with status CREATED
+        // Order speichern
         orderService.save(order);
 
-        // 4. Create Payment with status PENDING (simulateSuccess = false!)
+        // Payment anlegen (Status PENDING)
         Payment payment = paymentIntegrationService.initiatePaymentForOrder(order, "PAYPAL", false);
         payment.setStatus(PaymentStatus.PENDING);
 
-        // 5. Save payment
+        // Payment speichern
         paymentIntegrationService.savePayment(payment);
 
-        // 6. Return IDs
+        // IDs zurückgeben
         return new String[]{ order.getId(), payment.getId() };
     }
+
+    /**
+     * Setzt Order-Status.
+     */
     public void updateOrderStatus(String orderId, String newStatus) {
         Order order = orderService.findById(orderId);
         if (order != null) {
@@ -74,14 +76,22 @@ public class OrderApplicationService {
             orderService.save(order);
         }
     }
+
+    /**
+     * Setzt Order-Status + "paid"-Flag.
+     */
     public void updateOrderStatusAndPaid(String orderId, String newStatus, boolean paid) {
         Order order = orderService.findById(orderId);
         if (order != null) {
             order.setStatus(OrderStatus.valueOf(newStatus));
-            order.setPaid(paid); // <--- das ist neu!
+            order.setPaid(paid);
             orderService.save(order);
         }
     }
+
+    /**
+     * Setzt Payment-Status.
+     */
     public void updatePaymentStatus(String paymentId, String newStatus) {
         Payment payment = paymentIntegrationService.findById(paymentId);
         if (payment != null) {
@@ -89,11 +99,16 @@ public class OrderApplicationService {
             paymentIntegrationService.savePayment(payment);
         }
     }
+
+    /**
+     * Vollständiger Bestell-Workflow (mit direkter Zahlung).
+     * Gibt Order-ID zurück, falls erfolgreich, sonst null.
+     */
     public String placeOrder(String customerId, String restaurantId, Address deliveryAddress, List<OrderItemRequest> itemRequests, String paymentMethod, boolean simulateSuccess) {
-        // 1. Create Order aggregate
+        // Order anlegen
         Order order = orderService.createOrder(customerId, restaurantId, deliveryAddress);
 
-        // 2. Add items to order
+        // Items hinzufügen
         Menu menu = menuRepository.findByRestaurantId(restaurantId);
         List<OrderItem> items = new ArrayList<>();
         for (OrderItemRequest itemRequest : itemRequests) {
@@ -109,26 +124,29 @@ public class OrderApplicationService {
         }
         orderService.addItems(order, items);
 
-        // 3. Confirm the order
+        // Order bestätigen
         orderService.confirmOrder(order);
 
-        // 4. Save order (before payment)
+        // Order speichern
         orderService.save(order);
 
-        // 5. Initiate payment via Integration/ACL
+        // Payment anstoßen
         Payment payment = paymentIntegrationService.initiatePaymentForOrder(order, paymentMethod, simulateSuccess);
 
-        // 6. If payment successful, mark order as paid and save again
+        // Falls Payment erfolgreich, Order als bezahlt markieren
         if (payment.getStatus() == PaymentStatus.COMPLETED) {
             orderService.markOrderAsPaid(order);
             orderService.save(order);
-            return order.getId(); // Or a success DTO
+            return order.getId();
         } else {
-            // Payment failed, order is not paid/confirmed
-            // Optionally fire a domain event, or throw an exception, or return error DTO
-            return null; // Or a failure DTO/error code/message
+            // Payment fehlgeschlagen
+            return null;
         }
     }
+
+    /**
+     * DTO für Bestellpositionen.
+     */
     public static class OrderItemRequest {
         private final String menuItemId;
         private final int quantity;
