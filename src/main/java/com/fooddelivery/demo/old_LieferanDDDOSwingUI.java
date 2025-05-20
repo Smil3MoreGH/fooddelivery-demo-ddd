@@ -1,4 +1,4 @@
-package com.fooddelivery.demo;
+/*package com.fooddelivery.demo;
 
 import javax.swing.*;
 import java.awt.*;
@@ -117,7 +117,6 @@ public class old_LieferanDDDOSwingUI extends JFrame {
         // Place order from basket
         placeBasketOrderBtn.addActionListener(e -> {
             JOptionPane.showMessageDialog(this, "Order placed!\n" + basket);
-            // TODO: Call your DDD application service here
             basket.clear();
             basketListModel.clear();
             basketTotalLabel.setText("Total: 0€");
@@ -172,7 +171,6 @@ public class old_LieferanDDDOSwingUI extends JFrame {
         int total = 0;
         for (Map.Entry<String, Integer> entry : basket.entrySet()) {
             basketListModel.addElement(entry.getKey() + " x" + entry.getValue());
-            // TODO: Calculate price using your DDD model!
             total += entry.getValue() * 6; // Placeholder: 6€/item
         }
         basketTotalLabel.setText("Total: " + total + "€");
@@ -229,3 +227,4 @@ public class old_LieferanDDDOSwingUI extends JFrame {
         SwingUtilities.invokeLater(() -> new old_LieferanDDDOSwingUI().setVisible(true));
     }
 }
+*/
