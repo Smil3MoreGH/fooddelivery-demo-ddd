@@ -4,14 +4,14 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-// MenuItem Entity
+// MenuItem Entity: Einzelnes Menü-Item im Restaurant
 public class MenuItem {
-    private final String id;
-    private String name;
-    private String description;
-    private Price price; // Value Object
-    private List<String> allergens;
-    private boolean available;
+    private final String id;         // Item-ID
+    private String name;             // Name des Gerichts
+    private String description;      // Beschreibung
+    private Price price;             // Preis (Value Object)
+    private List<String> allergens;  // Allergene
+    private boolean available;       // Verfügbarkeit
 
     public MenuItem(String id, String name, String description, Price price) {
         this.id = id;
@@ -22,20 +22,22 @@ public class MenuItem {
         this.available = true;
     }
 
+    // Preis aktualisieren
     public void updatePrice(Price newPrice) {
         this.price = newPrice;
     }
 
-    // Method to set item availability
+    // Verfügbarkeit setzen
     public void setAvailability(boolean available) {
         this.available = available;
     }
 
+    // Allergen hinzufügen
     public void addAllergen(String allergen) {
         allergens.add(allergen);
     }
 
-    // Getters
+    // Getter (unveränderbare Allergene-Liste)
     public String getId() { return id; }
     public String getName() { return name; }
     public String getDescription() { return description; }

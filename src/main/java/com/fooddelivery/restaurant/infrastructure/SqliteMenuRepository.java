@@ -3,15 +3,17 @@ package com.fooddelivery.restaurant.infrastructure;
 import com.fooddelivery.restaurant.domain.*;
 import java.sql.*;
 
+// SQLite-Repository für Menüs und Menü-Items
 public class SqliteMenuRepository implements MenuRepository {
     private static final String DB_PATH = "./restaurant_menu.db";
     private Connection connection;
 
     public SqliteMenuRepository() {
-        connect();
-        createTables();
+        connect();        // Datenbankverbindung herstellen
+        createTables();   // Tabellen anlegen, falls nicht vorhanden
     }
 
+    // Verbindung zur SQLite-Datenbank aufbauen
     private void connect() {
         try {
             connection = DriverManager.getConnection("jdbc:sqlite:" + DB_PATH);
@@ -20,6 +22,7 @@ public class SqliteMenuRepository implements MenuRepository {
         }
     }
 
+    // Menüs- und Menü-Items-Tabellen erstellen
     private void createTables() {
         String menuTable = """
             CREATE TABLE IF NOT EXISTS menus (
@@ -46,9 +49,10 @@ public class SqliteMenuRepository implements MenuRepository {
         }
     }
 
+    // Menü inkl. Items speichern (Items werden vorher gelöscht)
     @Override
     public void save(Menu menu) {
-        // Save Menu
+        // Menü speichern
         String sqlMenu = """
             INSERT OR REPLACE INTO menus (id, restaurant_id)
             VALUES (?, ?);
@@ -61,8 +65,7 @@ public class SqliteMenuRepository implements MenuRepository {
             throw new RuntimeException("Save menu failed: " + e.getMessage(), e);
         }
 
-        // Save MenuItems
-        // Erst löschen, dann neu einfügen (einfachste Strategie für Demo)
+        // Vorherige Items löschen
         String deleteItems = "DELETE FROM menu_items WHERE menu_id = ?";
         try (PreparedStatement pstmt = connection.prepareStatement(deleteItems)) {
             pstmt.setString(1, menu.getId());
@@ -71,6 +74,7 @@ public class SqliteMenuRepository implements MenuRepository {
             throw new RuntimeException("Delete old items failed: " + e.getMessage(), e);
         }
 
+        // Neue Items einfügen
         String sqlItem = """
             INSERT INTO menu_items (id, menu_id, name, description, price, currency, available)
             VALUES (?, ?, ?, ?, ?, ?, ?);
@@ -91,6 +95,7 @@ public class SqliteMenuRepository implements MenuRepository {
         }
     }
 
+    // Menü per ID finden
     @Override
     public Menu findById(String id) {
         String sqlMenu = "SELECT * FROM menus WHERE id = ?";
@@ -107,6 +112,7 @@ public class SqliteMenuRepository implements MenuRepository {
         return null;
     }
 
+    // Menü per Restaurant-ID finden
     @Override
     public Menu findByRestaurantId(String restaurantId) {
         String sqlMenu = "SELECT * FROM menus WHERE restaurant_id = ?";
@@ -123,7 +129,7 @@ public class SqliteMenuRepository implements MenuRepository {
         return null;
     }
 
-    // Helper: baut das Menu-Objekt inkl. Items zusammen
+    // Hilfsmethode: Menü inkl. Items aus DB zusammenbauen
     private Menu mapToMenu(String menuId, String restaurantId) {
         Menu menu = new Menu(menuId, restaurantId);
 

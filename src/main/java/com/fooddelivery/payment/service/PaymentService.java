@@ -6,18 +6,20 @@ import com.fooddelivery.payment.domain.PaymentRepository;
 
 import java.util.UUID;
 
+// Service für Zahlungs-Logik
 public class PaymentService {
-    private final PaymentRepository paymentRepository;
+    private final PaymentRepository paymentRepository; // Repository für Speicherung
 
     public PaymentService(PaymentRepository paymentRepository) {
         this.paymentRepository = paymentRepository;
     }
 
+    // Startet und verarbeitet eine Zahlung (mit Simulations-Flag)
     public Payment processPayment(String orderId, Money amount, String paymentMethod, boolean simulateSuccess) {
         String paymentId = UUID.randomUUID().toString();
         Payment payment = new Payment(paymentId, orderId, amount, paymentMethod);
 
-        // Use simulation flag to force result
+        // Erfolgreiche oder fehlgeschlagene Zahlung simulieren
         boolean isSuccessful = simulateSuccess;
 
         if (isSuccessful) {
@@ -30,15 +32,18 @@ public class PaymentService {
         paymentRepository.save(payment);
         return payment;
     }
+
+    // Speichert Payment-Objekt
     public void save(Payment payment) {
-        // Repository call
         paymentRepository.save(payment);
     }
 
+    // Findet Payment per ID
     public Payment findById(String paymentId) {
         return paymentRepository.findById(paymentId);
     }
 
+    // Gibt das Repository zurück (z.B. für Tests)
     public PaymentRepository getRepository() {
         return paymentRepository;
     }

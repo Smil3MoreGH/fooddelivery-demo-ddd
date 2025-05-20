@@ -1,18 +1,16 @@
 package com.fooddelivery.payment.domain;
 
-//import java.time.LocalDateTime;
-//import java.util.UUID;
-
-// Notice different definition of Money in this context
+// Value Object: Geldbetrag für Zahlungen (mit ISO-Währungscode)
 public class Money {
-    private final double amount;
-    private final String currencyCode; // ISO currency code
+    private final double amount;         // Betrag
+    private final String currencyCode;   // Währung (ISO-Code, z.B. "EUR")
 
     public Money(double amount, String currencyCode) {
         this.amount = amount;
         this.currencyCode = currencyCode;
     }
 
+    // Getter
     public double getAmount() { return amount; }
     public String getCurrencyCode() { return currencyCode; }
 }

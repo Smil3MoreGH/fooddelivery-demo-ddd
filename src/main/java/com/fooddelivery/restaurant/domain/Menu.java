@@ -4,35 +4,34 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-// Menu Aggregate Root
+// Menu Aggregate Root: Enthält Menü-Items für ein Restaurant
 public class Menu {
-    private final String id;
-    private final String restaurantId;
-    private final List<MenuItem> items;
+    private final String id;              // Menü-ID
+    private final String restaurantId;    // Zugehöriges Restaurant
+    private final List<MenuItem> items;   // Liste aller Menü-Items
 
     public Menu(String id, String restaurantId) {
         this.id = id;
         this.restaurantId = restaurantId;
         this.items = new ArrayList<>();
     }
-    // Adds a MenuItem to the Menu after checking for duplicate IDs
+
+    // Fügt ein neues Menü-Item hinzu (kein Duplikat erlaubt)
     public void addItem(MenuItem item) {
-        // Check for duplicate item IDs
         for (MenuItem existingItem : items) {
             if (existingItem.getId().equals(item.getId())) {
                 throw new IllegalArgumentException("Item with ID " + item.getId() + " already exists in the menu");
             }
         }
-
         items.add(item);
     }
 
-    // Removes item by ID
+    // Entfernt ein Menü-Item per ID
     public void removeItem(String itemId) {
         items.removeIf(item -> item.getId().equals(itemId));
     }
 
-    // Get a specific menu item by id
+    // Gibt ein Menü-Item per ID zurück
     public MenuItem getItem(String itemId) {
         return items.stream()
                 .filter(item -> item.getId().equals(itemId))
@@ -40,17 +39,17 @@ public class Menu {
                 .orElse(null);
     }
 
-    // Get all available items
+    // Gibt alle verfügbaren Items zurück
     public List<MenuItem> getAvailableItems() {
         return items.stream()
                 .filter(MenuItem::isAvailable)
                 .collect(java.util.stream.Collectors.toList());
     }
 
-    // Getters
+    // Getter
     public String getId() { return id; }
     public String getRestaurantId() { return restaurantId; }
 
-    // prevennts external mutation
+    // Liefert eine unveränderbare Liste aller Items zurück
     public List<MenuItem> getItems() { return Collections.unmodifiableList(items); }
 }

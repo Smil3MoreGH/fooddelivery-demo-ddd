@@ -3,18 +3,18 @@ package com.fooddelivery.payment.infrastructure;
 import com.fooddelivery.payment.domain.*;
 
 import java.sql.*;
-//import java.time.LocalDateTime;
-//import java.util.*;
 
+// SQLite-Repository für Payments (Zahlungen)
 public class SqlitePaymentRepository implements PaymentRepository {
     private static final String DB_PATH = "./payment.db";
     private Connection connection;
 
     public SqlitePaymentRepository() {
-        connect();
-        createTable();
+        connect();      // Verbindung zur Datenbank aufbauen
+        createTable();  // Tabelle anlegen, falls nötig
     }
 
+    // Verbindung zu SQLite herstellen
     private void connect() {
         try {
             connection = DriverManager.getConnection("jdbc:sqlite:" + DB_PATH);
@@ -23,6 +23,7 @@ public class SqlitePaymentRepository implements PaymentRepository {
         }
     }
 
+    // Legt die Payment-Tabelle an, falls sie noch nicht existiert
     private void createTable() {
         String paymentTable = """
             CREATE TABLE IF NOT EXISTS payments (
@@ -43,6 +44,7 @@ public class SqlitePaymentRepository implements PaymentRepository {
         }
     }
 
+    // Speichert oder aktualisiert ein Payment
     @Override
     public void save(Payment payment) {
         String sql = """
@@ -65,6 +67,7 @@ public class SqlitePaymentRepository implements PaymentRepository {
         }
     }
 
+    // Payment per ID finden
     @Override
     public Payment findById(String id) {
         String sql = "SELECT * FROM payments WHERE id = ?";
@@ -81,6 +84,7 @@ public class SqlitePaymentRepository implements PaymentRepository {
         return null;
     }
 
+    // Payment per Order-ID finden
     @Override
     public Payment findByOrderId(String orderId) {
         String sql = "SELECT * FROM payments WHERE order_id = ?";
@@ -97,7 +101,7 @@ public class SqlitePaymentRepository implements PaymentRepository {
         return null;
     }
 
-    // Helper zum Mappen eines ResultSet auf dein Payment-Domain-Objekt
+    // Hilfsmethode: DB-Zeile in Payment-Objekt mappen
     private Payment mapToPayment(ResultSet rs) throws SQLException {
         String id = rs.getString("id");
         String orderId = rs.getString("order_id");
@@ -111,7 +115,7 @@ public class SqlitePaymentRepository implements PaymentRepository {
         Money money = new Money(amount, currency);
         Payment payment = new Payment(id, orderId, money, paymentMethod);
 
-        // Status setzen
+        // Status korrekt setzen
         PaymentStatus status = PaymentStatus.valueOf(statusStr);
         switch (status) {
             case COMPLETED -> payment.markAsCompleted(transactionReference);
@@ -124,13 +128,7 @@ public class SqlitePaymentRepository implements PaymentRepository {
                 // nothing, already PENDING
             }
         }
-        // processedAt kann beim Markieren gesetzt werden; wir überschreiben es hier ggf.
-        if (processedAtStr != null && !processedAtStr.isEmpty()) {
-            try {
-                // Nur wenn du in Payment ein Setter für processedAt hast – ansonsten ignorieren.
-                // LocalDateTime processedAt = LocalDateTime.parse(processedAtStr);
-            } catch (Exception ignored) {}
-        }
+        // processedAt: Ignoriert, falls kein Setter vorhanden (siehe Kommentar)
         return payment;
     }
 }

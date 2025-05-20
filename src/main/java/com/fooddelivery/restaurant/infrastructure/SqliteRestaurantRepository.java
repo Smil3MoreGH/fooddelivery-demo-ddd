@@ -6,15 +6,17 @@ import com.fooddelivery.ordermanagement.domain.Restaurant;
 import java.sql.*;
 import java.util.*;
 
+// SQLite-Repository für Restaurants
 public class SqliteRestaurantRepository {
     private static final String DB_PATH = "./restaurant_menu.db";
     private Connection connection;
 
     public SqliteRestaurantRepository() {
-        connect();
-        createTable();
+        connect();      // Verbindung aufbauen
+        createTable();  // Tabelle anlegen, falls nicht vorhanden
     }
 
+    // Verbindung zur SQLite-Datenbank herstellen
     private void connect() {
         try {
             connection = DriverManager.getConnection("jdbc:sqlite:" + DB_PATH);
@@ -23,6 +25,7 @@ public class SqliteRestaurantRepository {
         }
     }
 
+    // Restaurant-Tabelle erstellen
     private void createTable() {
         String restaurantTable = """
             CREATE TABLE IF NOT EXISTS restaurants (
@@ -38,7 +41,7 @@ public class SqliteRestaurantRepository {
         }
     }
 
-    // Speichert oder überschreibt ein Restaurant
+    // Restaurant speichern oder aktualisieren
     public void save(Restaurant restaurant) {
         String sql = """
             INSERT OR REPLACE INTO restaurants (id, name, street)
@@ -54,7 +57,7 @@ public class SqliteRestaurantRepository {
         }
     }
 
-    // Holt ein Restaurant anhand der ID
+    // Restaurant per ID finden
     public Restaurant findById(String id) {
         String sql = "SELECT * FROM restaurants WHERE id = ?";
         try (PreparedStatement pstmt = connection.prepareStatement(sql)) {
@@ -70,7 +73,7 @@ public class SqliteRestaurantRepository {
         return null;
     }
 
-    // Gibt alle Restaurants zurück (z.B. für das Demo-Menü)
+    // Alle Restaurants auflisten (z.B. für Demo)
     public List<Restaurant> findAll() {
         String sql = "SELECT * FROM restaurants";
         List<Restaurant> list = new ArrayList<>();
@@ -85,11 +88,12 @@ public class SqliteRestaurantRepository {
         return list;
     }
 
+    // Hilfsmethode: DB-Zeile in Restaurant-Objekt umwandeln
     private Restaurant mapToRestaurant(ResultSet rs) throws SQLException {
         String id = rs.getString("id");
         String name = rs.getString("name");
         String street = rs.getString("street");
-        // Adresse für Demo minimal
+        // Adresse (für Demo nur Straße gepflegt)
         Address address = new Address(street != null ? street : "Unbekannte Straße", "00000", "Unbekannt");
         return new Restaurant(id, name, address);
     }
