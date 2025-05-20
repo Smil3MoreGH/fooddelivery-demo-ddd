@@ -16,12 +16,16 @@ import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.*;
 import javafx.stage.Stage;
+
+import com.fooddelivery.application.OrderApplicationService;
+import com.fooddelivery.application.OrderApplicationService.OrderItemRequest;
 import com.fooddelivery.integration.PaymentIntegrationService;
 import com.fooddelivery.ordermanagement.infrastructure.SqliteOrderRepository;
 import com.fooddelivery.ordermanagement.service.OrderService;
-import com.fooddelivery.payment.domain.PaymentService;
 import com.fooddelivery.payment.infrastructure.SqlitePaymentRepository;
+import com.fooddelivery.payment.service.PaymentService;
 
+import java.util.ArrayList;
 import java.util.List;
 
 // --- Einfache Basket-Klasse (du kannst sie in eine eigene Datei auslagern!) ---
@@ -37,9 +41,10 @@ public class MobileFoodUI extends Application {
     private final SqliteRestaurantRepository restaurantRepo = new SqliteRestaurantRepository();
     private final SqliteMenuRepository menuRepo = new SqliteMenuRepository();
     private final Basket basket = new Basket();
-    private final PaymentIntegrationService paymentIntegrationService = new PaymentIntegrationService(
+    private final OrderApplicationService orderApplicationService = new OrderApplicationService(
             new OrderService(new SqliteOrderRepository()),
-            new PaymentService(new SqlitePaymentRepository())
+            menuRepo,
+            new PaymentIntegrationService(new PaymentService(new SqlitePaymentRepository()))
     );
 
     @Override
@@ -310,16 +315,9 @@ public class MobileFoodUI extends Application {
         javafx.scene.control.Button fakeOrderBtn = new javafx.scene.control.Button("Bestellen ohne Bezahlen");
         root.getChildren().addAll(paypalBtn, fakeOrderBtn);
 
+        // NEW: Use new orchestration for order+payment
         paypalBtn.setOnAction(e -> {
-            boolean success = paymentIntegrationService.payAndCreateOrder(
-                    name,
-                    street,
-                    city,
-                    restaurant.getId(),
-                    basket.getItems(),
-                    total,
-                    "PAYPAL"
-            );
+            boolean success = tryPlaceOrderWithPayment(name, street, city, restaurant, true);
             root.getChildren().clear();
             if (success) {
                 Label thanks = new Label("Vielen Dank für deine Zahlung und Bestellung!");
@@ -332,15 +330,7 @@ public class MobileFoodUI extends Application {
         });
 
         fakeOrderBtn.setOnAction(e -> {
-            boolean success = paymentIntegrationService.payAndCreateOrder(
-                    name,
-                    street,
-                    city,
-                    restaurant.getId(),
-                    basket.getItems(),
-                    total,
-                    "NONE"
-            );
+            boolean success = tryPlaceOrderWithPayment(name, street, city, restaurant, false);
             root.getChildren().clear();
             if (success) {
                 Label thanks = new Label("Bestellung wurde ohne Bezahlung durchgeführt (sollte nicht passieren)!");
@@ -362,6 +352,24 @@ public class MobileFoodUI extends Application {
         Scene paymentScene = new Scene(root, 430, 840);
         paymentScene.getStylesheets().add(getClass().getResource("/mobile-food.css").toExternalForm());
         stage.setScene(paymentScene);
+    }
+    
+    private boolean tryPlaceOrderWithPayment(String name, String street, String city, Restaurant restaurant, boolean simulateSuccess) {
+        Address address = new Address(street, "00000", city);
+        List<OrderItemRequest> itemRequests = new ArrayList<>();
+        for (MenuItem item : basket.getItems()) {
+            itemRequests.add(new OrderItemRequest(item.getId(), 1)); // You can use real quantity if you have it
+        }
+        // Try to place order, returns orderId on success, null on error
+        String orderId = orderApplicationService.placeOrder(
+                name,
+                restaurant.getId(),
+                address,
+                itemRequests,
+                "PAYPAL",     // or whatever method, could be passed in as param
+                simulateSuccess
+        );
+        return orderId != null;
     }
 
     private String getImageForRestaurant(String restaurantName) {

@@ -1,4 +1,8 @@
-package com.fooddelivery.payment.domain;
+package com.fooddelivery.payment.service;
+
+import com.fooddelivery.payment.domain.Money;
+import com.fooddelivery.payment.domain.Payment;
+import com.fooddelivery.payment.domain.PaymentRepository;
 
 import java.util.UUID;
 
@@ -9,12 +13,12 @@ public class PaymentService {
         this.paymentRepository = paymentRepository;
     }
 
-    public Payment processPayment(String orderId, Money amount, String paymentMethod) {
+    public Payment processPayment(String orderId, Money amount, String paymentMethod, boolean simulateSuccess) {
         String paymentId = UUID.randomUUID().toString();
         Payment payment = new Payment(paymentId, orderId, amount, paymentMethod);
 
-        // Simulate payment processing
-        boolean isSuccessful = Math.random() > 0.1; // 90% success rate
+        // Use simulation flag to force result
+        boolean isSuccessful = simulateSuccess;
 
         if (isSuccessful) {
             String transactionRef = "TX-" + UUID.randomUUID().toString().substring(0, 8);

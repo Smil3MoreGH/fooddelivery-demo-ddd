@@ -1,4 +1,4 @@
-package com.fooddelivery.ordermanagement.domain;
+package com.fooddelivery.ordermanagement.domain.Events;
 
 import java.time.LocalDateTime;
 import java.util.UUID;

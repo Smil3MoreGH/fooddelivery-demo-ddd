@@ -1,12 +1,9 @@
 package com.fooddelivery.ordermanagement.service;
 
-import com.fooddelivery.ordermanagement.domain.Address;
-import com.fooddelivery.ordermanagement.domain.Order;
-import com.fooddelivery.ordermanagement.domain.OrderRepository;
-
+import com.fooddelivery.ordermanagement.domain.*;
 import java.util.UUID;
+import java.util.List;
 
-// Domain Service - complex operations involving multiple aggregates
 public class OrderService {
     public final OrderRepository orderRepository;
 
@@ -16,22 +13,24 @@ public class OrderService {
 
     public Order createOrder(String customerId, String restaurantId, Address deliveryAddress) {
         String orderId = UUID.randomUUID().toString();
-        Order order = new Order(orderId, customerId, restaurantId, deliveryAddress);
-        orderRepository.save(order);
-        return order;
+        return new Order(orderId, customerId, restaurantId, deliveryAddress);
     }
 
-    public void processPayment(String orderId, boolean successful) {
-        Order order = orderRepository.findById(orderId);
-        if (order == null)
-            throw new IllegalArgumentException("Order not found");
-
-        if (successful) {
-            order.markAsPaid();
-            orderRepository.save(order);
+    public void addItems(Order order, List<OrderItem> items) {
+        for (OrderItem item : items) {
+            order.addItem(item);
         }
     }
-    public OrderRepository getOrderRepository() {
-        return orderRepository;
+
+    public void confirmOrder(Order order) {
+        order.confirm();
+    }
+
+    public void markOrderAsPaid(Order order) {
+        order.markAsPaid();
+    }
+
+    public void save(Order order) {
+        orderRepository.save(order);
     }
 }
