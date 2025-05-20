@@ -12,6 +12,7 @@ import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.Label;
+import javafx.scene.control.ProgressIndicator;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.*;
@@ -312,37 +313,15 @@ public class MobileFoodUI extends Application {
         root.getChildren().add(sum);
 
         javafx.scene.control.Button paypalBtn = new javafx.scene.control.Button("Mit PayPal bezahlen");
-        javafx.scene.control.Button fakeOrderBtn = new javafx.scene.control.Button("Bestellen ohne Bezahlen");
-        root.getChildren().addAll(paypalBtn, fakeOrderBtn);
+        root.getChildren().add(paypalBtn);
 
-        // NEW: Use new orchestration for order+payment
         paypalBtn.setOnAction(e -> {
-            boolean success = tryPlaceOrderWithPayment(name, street, city, restaurant, true);
-            root.getChildren().clear();
-            if (success) {
-                Label thanks = new Label("Vielen Dank für deine Zahlung und Bestellung!");
-                thanks.setStyle("-fx-font-size:1.2em; -fx-font-weight:600;");
-                root.getChildren().add(thanks);
-                basket.clear();
-            } else {
-                root.getChildren().add(new Label("Zahlung fehlgeschlagen! Bitte bezahle zuerst."));
-            }
-        });
-
-        fakeOrderBtn.setOnAction(e -> {
-            boolean success = tryPlaceOrderWithPayment(name, street, city, restaurant, false);
-            root.getChildren().clear();
-            if (success) {
-                Label thanks = new Label("Bestellung wurde ohne Bezahlung durchgeführt (sollte nicht passieren)!");
-                thanks.setStyle("-fx-font-size:1.2em; -fx-font-weight:600;");
-                root.getChildren().add(thanks);
-                basket.clear();
-            } else {
-                Label error = new Label("Fehler: Bitte bezahle erst, bevor du bestellst!");
-                error.setStyle("-fx-font-size:1.1em; -fx-text-fill: #ff3333; -fx-font-weight:600;");
-                root.getChildren().add(error);
-                root.getChildren().add(paypalBtn);
-            }
+            // Erzeuge Order (CREATED) und Payment (PENDING)
+            String[] ids = createOrderAndPayment(name, street, city, restaurant);
+            String orderId = ids[0];
+            String paymentId = ids[1];
+            // Ladeanimation anzeigen und Buttons
+            openPaymentLoadingPage(stage, orderId, paymentId, restaurant, total);
         });
 
         javafx.scene.control.Button backBtn = new javafx.scene.control.Button("Zurück");
@@ -353,7 +332,77 @@ public class MobileFoodUI extends Application {
         paymentScene.getStylesheets().add(getClass().getResource("/mobile-food.css").toExternalForm());
         stage.setScene(paymentScene);
     }
-    
+
+    private String[] createOrderAndPayment(String name, String street, String city, Restaurant restaurant) {
+        Address address = new Address(street, "00000", city);
+        List<OrderItemRequest> itemRequests = new ArrayList<>();
+        for (MenuItem item : basket.getItems()) {
+            itemRequests.add(new OrderItemRequest(item.getId(), 1));
+        }
+        // Diese Methode sollte die Order und Payment-IDs zurückgeben!
+        // Passe OrderApplicationService an, falls nötig!
+        return orderApplicationService.createOrderAndPayment(name, restaurant.getId(), address, itemRequests);
+    }
+
+    private void openPaymentLoadingPage(Stage stage, String orderId, String paymentId, Restaurant restaurant, double total) {
+        VBox root = new VBox(30);
+        root.setPadding(new Insets(60));
+        root.setAlignment(Pos.CENTER);
+
+        // Loading Animation (z.B. ein rotierender Kreis oder GIF)
+        Label loading = new Label("Warte auf Bestätigung ...");
+        loading.setStyle("-fx-font-size: 1.1em; -fx-font-weight: 500;");
+
+        // Optional: Echte Animation hinzufügen
+        ProgressIndicator pi = new ProgressIndicator();
+        pi.setPrefSize(56, 56);
+
+        root.getChildren().addAll(pi, loading);
+
+        javafx.scene.control.Button confirmBtn = new javafx.scene.control.Button("Zurück mit Bezahlen");
+        javafx.scene.control.Button cancelBtn = new javafx.scene.control.Button("Zurück ohne Bezahlen");
+
+        confirmBtn.setOnAction(e -> {
+            // Update beide Einträge: Order (CONFIRMED), Payment (COMPLETED)
+            orderApplicationService.updateOrderStatusAndPaid(orderId, "CONFIRMED", true);
+            orderApplicationService.updatePaymentStatus(paymentId, "COMPLETED");
+            basket.clear();
+            showConfirmation(stage, "Zahlung erfolgreich! Bestellung ist bestätigt.");
+        });
+
+        cancelBtn.setOnAction(e -> {
+            // Update beide Einträge: Order (CANCELLED), Payment (FAILED)
+            orderApplicationService.updateOrderStatus(orderId, "CANCELLED");
+            orderApplicationService.updatePaymentStatus(paymentId, "FAILED");
+            showConfirmation(stage, "Bezahlung abgebrochen. Bestellung storniert.");
+        });
+
+        HBox btnBox = new HBox(22, confirmBtn, cancelBtn);
+        btnBox.setAlignment(Pos.CENTER);
+        root.getChildren().add(btnBox);
+
+        Scene scene = new Scene(root, 430, 840);
+        scene.getStylesheets().add(getClass().getResource("/mobile-food.css").toExternalForm());
+        stage.setScene(scene);
+    }
+
+    private void showConfirmation(Stage stage, String message) {
+        VBox root = new VBox(32);
+        root.setAlignment(Pos.CENTER);
+        root.setPadding(new Insets(60));
+        Label msg = new Label(message);
+        msg.setStyle("-fx-font-size: 1.25em; -fx-font-weight: bold;");
+        root.getChildren().add(msg);
+
+        javafx.scene.control.Button backBtn = new javafx.scene.control.Button("Zurück zur Startseite");
+        backBtn.setOnAction(e -> showRestaurantList(stage));
+        root.getChildren().add(backBtn);
+
+        Scene scene = new Scene(root, 430, 840);
+        scene.getStylesheets().add(getClass().getResource("/mobile-food.css").toExternalForm());
+        stage.setScene(scene);
+    }
+
     private boolean tryPlaceOrderWithPayment(String name, String street, String city, Restaurant restaurant, boolean simulateSuccess) {
         Address address = new Address(street, "00000", city);
         List<OrderItemRequest> itemRequests = new ArrayList<>();

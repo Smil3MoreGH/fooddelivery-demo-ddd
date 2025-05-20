@@ -17,4 +17,14 @@ public class PaymentIntegrationService {
         Money paymentAmount = new Money(order.calculateTotal().getAmount(), order.calculateTotal().getCurrency());
         return paymentService.processPayment(order.getId(), paymentAmount, paymentMethod, simulateSuccess);
     }
+
+    // Speichere ein Payment-Objekt (z.B. nach Status-Update)
+    public void savePayment(Payment payment) {
+        paymentService.save(payment);
+    }
+
+    // Finde ein Payment anhand der ID
+    public Payment findById(String paymentId) {
+        return paymentService.findById(paymentId);
+    }
 }

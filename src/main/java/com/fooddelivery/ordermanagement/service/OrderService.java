@@ -26,6 +26,9 @@ public class OrderService {
         order.confirm();
     }
 
+    public Order findById(String orderId) {
+        return orderRepository.findById(orderId);
+    }
     public void markOrderAsPaid(Order order) {
         order.markAsPaid();
     }

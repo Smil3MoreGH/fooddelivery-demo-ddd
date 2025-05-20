@@ -30,6 +30,14 @@ public class PaymentService {
         paymentRepository.save(payment);
         return payment;
     }
+    public void save(Payment payment) {
+        // Repository call
+        paymentRepository.save(payment);
+    }
+
+    public Payment findById(String paymentId) {
+        return paymentRepository.findById(paymentId);
+    }
 
     public PaymentRepository getRepository() {
         return paymentRepository;

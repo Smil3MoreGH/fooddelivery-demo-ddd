@@ -119,10 +119,17 @@ public class Order {
     public List<OrderItem> getItems() { return Collections.unmodifiableList(items); } // Immutable view
     public Address getDeliveryAddress() { return deliveryAddress; }
     public OrderStatus getStatus() { return status; }
-    public boolean isPaid() { return isPaid; }
+    public void setPaid(boolean paid) {
+        this.isPaid = paid;
+    }
+    public boolean isPaid() {
+        return isPaid;
+    }
     public LocalDateTime getCreatedAt() { return createdAt; }
 
-    // Domain Events handling
+    public void setStatus(OrderStatus status) {
+        this.status = status;
+    }
     public List<DomainEvent> getDomainEvents() {
         return new ArrayList<>(domainEvents);
     }

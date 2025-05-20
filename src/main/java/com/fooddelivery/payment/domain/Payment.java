@@ -43,7 +43,9 @@ public class Payment {
 
         this.status = PaymentStatus.REFUNDED;
     }
-
+    public void setStatus(PaymentStatus status) {
+        this.status = status;
+    }
     public String getId() { return id; }
     public String getOrderId() { return orderId; }
     public com.fooddelivery.payment.domain.Money getAmount() { return amount; }
