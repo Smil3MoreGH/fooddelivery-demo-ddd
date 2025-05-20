@@ -1,13 +1,14 @@
 package com.fooddelivery.ordermanagement.domain;
 
-// Value Object - represents an ordered menu item with quantity
+// Value Object: Bestelltes Menü-Item mit Menge und Preis
 public class OrderItem {
-    private final String menuItemId;
-    private final String name;
-    private final int quantity;
-    private final Money price; // Another Value Object
+    private final String menuItemId; // Menü-Item-ID
+    private final String name;       // Name des Items
+    private final int quantity;      // Menge
+    private final Money price;       // Einzelpreis
 
     public OrderItem(String menuItemId, String name, int quantity, Money price) {
+        // Validierung der Felder
         if (menuItemId == null || menuItemId.trim().isEmpty())
             throw new IllegalArgumentException("Menu item ID cannot be empty");
         if (name == null || name.trim().isEmpty())
@@ -23,11 +24,13 @@ public class OrderItem {
         this.price = price;
     }
 
+    // Getter (immutable)
     public String getMenuItemId() { return menuItemId; }
     public String getName() { return name; }
     public int getQuantity() { return quantity; }
     public Money getPrice() { return price; }
 
+    // Gesamtpreis für die Menge berechnen
     public Money getTotalPrice() {
         return price.multiply(quantity);
     }

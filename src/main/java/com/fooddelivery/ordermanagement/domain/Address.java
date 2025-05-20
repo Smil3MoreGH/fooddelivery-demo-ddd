@@ -1,19 +1,13 @@
 package com.fooddelivery.ordermanagement.domain;
 
-import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.UUID;
-
-// Value Object - represents a concept with no identity
+// Value Object für Adresse (ohne eigene ID)
 public class Address {
-    private final String street;
-    private final String zipCode;
-    private final String city;
+    private final String street;   // Straße und Hausnummer
+    private final String zipCode;  // 5-stellige PLZ
+    private final String city;     // Stadt
 
     public Address(String street, String zipCode, String city) {
-        // Validate invariants
+        // Validierung der Felder
         if (street == null || street.trim().isEmpty())
             throw new IllegalArgumentException("Street cannot be empty");
         if (zipCode == null || !zipCode.matches("\\d{5}"))
@@ -26,12 +20,12 @@ public class Address {
         this.city = city;
     }
 
-    // Value Objects are immutable - only getters, no setters
+    // Nur Getter (immutable)
     public String getStreet() { return street; }
     public String getZipCode() { return zipCode; }
     public String getCity() { return city; }
 
-    // Value Objects equality is based on attributes
+    // Gleichheit: basierend auf Attributen
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;

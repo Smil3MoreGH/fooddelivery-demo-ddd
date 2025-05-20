@@ -1,34 +1,47 @@
 package com.fooddelivery.ordermanagement.service;
 
-import com.fooddelivery.ordermanagement.domain.Address;
-import com.fooddelivery.ordermanagement.domain.Order;
-import com.fooddelivery.ordermanagement.domain.OrderRepository;
-
+import com.fooddelivery.ordermanagement.domain.*;
 import java.util.UUID;
+import java.util.List;
 
-// Domain Service - complex operations involving multiple aggregates
+// Service: Geschäftslogik für Bestellungen
 public class OrderService {
-    public final OrderRepository orderRepository;
+    public final OrderRepository orderRepository; // Zugriff auf Datenbank
 
     public OrderService(OrderRepository orderRepository) {
         this.orderRepository = orderRepository;
     }
 
+    // Neue Bestellung anlegen
     public Order createOrder(String customerId, String restaurantId, Address deliveryAddress) {
         String orderId = UUID.randomUUID().toString();
-        Order order = new Order(orderId, customerId, restaurantId, deliveryAddress);
-        orderRepository.save(order);
-        return order;
+        return new Order(orderId, customerId, restaurantId, deliveryAddress);
     }
 
-    public void processPayment(String orderId, boolean successful) {
-        Order order = orderRepository.findById(orderId);
-        if (order == null)
-            throw new IllegalArgumentException("Order not found");
-
-        if (successful) {
-            order.markAsPaid();
-            orderRepository.save(order);
+    // Mehrere Items zur Bestellung hinzufügen
+    public void addItems(Order order, List<OrderItem> items) {
+        for (OrderItem item : items) {
+            order.addItem(item);
         }
+    }
+
+    // Bestellung bestätigen
+    public void confirmOrder(Order order) {
+        order.confirm();
+    }
+
+    // Bestellung per ID finden
+    public Order findById(String orderId) {
+        return orderRepository.findById(orderId);
+    }
+
+    // Als bezahlt markieren
+    public void markOrderAsPaid(Order order) {
+        order.markAsPaid();
+    }
+
+    // Bestellung speichern
+    public void save(Order order) {
+        orderRepository.save(order);
     }
 }
